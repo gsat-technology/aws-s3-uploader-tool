@@ -16,62 +16,69 @@ def handler(event, context):
     """
     print('starting...')
 
-    _id = event['id']
-    title = event['title']
-    subtitle = event['subtitle']
-    instructions = event['instructions']
-    expires = event['expires']
-    bucket = os.environ['s3_bucket']
+    forms = event['forms']
 
-    #hashed id for link path
-    hash_object = hashlib.md5(_id)
-    id_hash = hash_object.hexdigest()[:8]
+    print(len(forms))
 
-    presign = client.generate_presigned_post(
-                                        Bucket=bucket, Key='uploads/' + _id + '.zip',
-                                        Fields=None,
-                                        Conditions=None,
-                                        ExpiresIn=expires)
+    for form in forms:
 
-    with open('template.index.html') as template_f:
-        template = Template(template_f.read())
+        _id = event['id']
+        title = event['title']
+        subtitle = event['subtitle']
+        instructions = event['instructions']
+        expires = event['expires']
+        bucket = os.environ['s3_bucket']
 
-    tmp = template.render(
-                        url=presign['url'],
-                        policy=presign['fields']['policy'],
-                        AWSAccessKeyId=presign['fields']['AWSAccessKeyId'],
-                        x_amz_security_token=presign['fields']['x-amz-security-token'],
-                        key=presign['fields']['key'],
-                        signature=presign['fields']['signature'],
-                        title=title,
-                        subtitle=subtitle,
-                        instructions=instructions)
+        #hashed id for link path
+        hash_object = hashlib.md5(_id)
+        id_hash = hash_object.hexdigest()[:8]
 
-    #write out to s3
-    track_f = StringIO(tmp)
-    track_f.seek(0)
+        presign = client.generate_presigned_post(
+                                            Bucket=bucket, Key='uploads/' + _id + '.zip',
+                                            Fields=None,
+                                            Conditions=None,
+                                            ExpiresIn=expires)
 
-    public_s3_key = 'public/' + id_hash + '/index.html'
+        with open('template.index.html') as template_f:
+            template = Template(template_f.read())
 
-    s3_response = client.put_object(
-                            Body=track_f,
-                            Bucket=bucket,
-                            Key=public_s3_key,
-                            ContentType='text/html'
-                                )
+        tmp = template.render(
+                            url=presign['url'],
+                            policy=presign['fields']['policy'],
+                            AWSAccessKeyId=presign['fields']['AWSAccessKeyId'],
+                            x_amz_security_token=presign['fields']['x-amz-security-token'],
+                            key=presign['fields']['key'],
+                            signature=presign['fields']['signature'],
+                            title=title,
+                            subtitle=subtitle,
+                            instructions=instructions)
 
-    #get the link
-    link = '{}/{}/{}'.format(client.meta.endpoint_url, bucket, public_s3_key)
+        #write out to s3
+        track_f = StringIO(tmp)
+        track_f.seek(0)
 
-    details = {
-        'presign': presign,
-        'id': _id,
-        'id_uuid': id_hash,
-        'bucket': bucket,
-        'form_link': link
-    }
+        public_s3_key = 'public/' + id_hash + '/index.html'
 
-    print(json.dumps(details))
+        s3_response = client.put_object(
+                                Body=track_f,
+                                Bucket=bucket,
+                                Key=public_s3_key,
+                                ContentType='text/html'
+                                    )
+
+        #get the link
+        link = '{}/{}/{}'.format(client.meta.endpoint_url, bucket, public_s3_key)
+
+        details = {
+            'presign': presign,
+            'id': _id,
+            'id_uuid': id_hash,
+            'bucket': bucket,
+            'form_link': link
+        }
+
+        print(json.dumps(details))
+
     print('done')
 
     return details
