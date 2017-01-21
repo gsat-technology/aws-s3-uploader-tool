@@ -61,7 +61,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3ResourceBucket
-        S3Key: apps/s3-presign/generatePresignPOST.zip
+        S3Key: apps/aws-s3-uploader-tool/generatePresignPOST.zip
       Description: generates presigned url
       FunctionName:
         !Join [ "_", [ !Ref "AWS::StackName", generatePresignPOST ] ]
@@ -80,7 +80,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3ResourceBucket
-        S3Key: apps/s3-presign/processUpload.zip
+        S3Key: apps/aws-s3-uploader-tool/processUpload.zip
       Description: triggered when file is POSTed to url
       FunctionName:
         !Join [ "_", [ !Ref "AWS::StackName", processUpload ] ]
