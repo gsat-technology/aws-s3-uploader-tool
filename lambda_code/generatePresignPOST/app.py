@@ -22,11 +22,11 @@ def handler(event, context):
 
     for form in forms:
 
-        _id = event['id']
-        title = event['title']
-        subtitle = event['subtitle']
-        instructions = event['instructions']
-        expires = event['expires']
+        _id = form['id']
+        title = form['title']
+        subtitle = form['subtitle']
+        instructions = form['instructions']
+        expires = form['expires']
         bucket = os.environ['s3_bucket']
 
         #hashed id for link path
