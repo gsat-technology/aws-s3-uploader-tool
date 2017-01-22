@@ -18,7 +18,9 @@ def handler(event, context):
 
     forms = event['forms']
 
-    print(len(forms))
+    print('processing: {}'.format(len(forms)))
+
+    results = []
 
     for form in forms:
 
@@ -77,8 +79,9 @@ def handler(event, context):
             'form_link': link
         }
 
-        print(json.dumps(details))
+        results.append(details)
 
+    print(json.dumps(results))
     print('done')
 
-    return details
+    return results
